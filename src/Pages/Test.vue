@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import {ref} from "vue";
-import {z} from "zod";
+import * as zod from "zod";
 
 import api from "../../services/api.ts";
 import {removeEmptyKeys} from "../util";
+
 import Box from "../components/InputItem/Box.vue";
 import Label from "../components/InputItem/Label.vue";
-import Input2 from "../components/InputItem/Input.vue";
+import Input from "../components/InputItem/Input.vue";
 import Error from "../components/InputItem/Error.vue";
 
 const initialPayload = {
@@ -18,9 +19,10 @@ const initialPayload = {
 const products = ref([]);
 const errors = ref({});
 const payload = ref({...initialPayload});
+const isTrySubmit = ref(false);
 
 
-function getProducts() {
+function setProducts() {
   api.get("/post").then(response => {
     products.value = response.data
   });
@@ -28,11 +30,12 @@ function getProducts() {
 
 function setError(e) {
   clearError();
+
   e.errors.forEach(err => {
     const error = {
       [err.path[0]]: err.message,
     }
-    errors.value = {...errors.value,...error};
+    errors.value = {...errors.value, ...error};
   });
 }
 
@@ -40,25 +43,35 @@ function clearError() {
   errors.value = {};
 }
 
-function validate(): boolean {
-  console.log("bmbmbm")
+function validate(): boolean | void {
+  if (!isTrySubmit.value) return;
+
   try {
     const clearObject = removeEmptyKeys(payload.value)
-    const schema = z.object({
-      name: z.string(),
-      title: z.string(),
-      description: z.string()
+    const schema = zod.object({
+      name: zod.string(),
+      title: zod.string(),
+      description: zod.string()
     })
+
     schema.parse(clearObject)
+
     clearError();
+
     return false
+
   } catch (e) {
+
     setError(e)
+
     return true;
+
   }
 }
 
 async function submit() {
+  isTrySubmit.value = true;
+
   const result = validate();
 
   if (result) return;
@@ -74,7 +87,7 @@ async function submit() {
 }
 
 function onMounted() {
-  getProducts();
+  setProducts();
 }
 
 onMounted();
@@ -83,24 +96,28 @@ onMounted();
 <template>
   <form @submit.prevent="submit" style="display: flex; flex-direction: column; gap: 10px">
     <Box>
-      <Label name="name" />
-      <Input2 @change="validate()" name="name" v-model:input-value="payload.name" v-model:error-input="errors['name']"/>
-      <Error v-model:error-input="errors['name']" />
+      <Label name="name"/>
+      <Input @input="validate()" name="name" v-model:input-value="payload.name" :error-input="errors['name']"/>
+      <Error :error-input="errors['name']"/>
     </Box>
+
     <Box>
-      <Label name="description" />
-      <Input2 name="description" v-model:input-value="payload.description" v-model:error-input="errors['description']"/>
-      <Error v-model:error-input="errors['description']" />
+      <Label name="description"/>
+      <Input @input="validate()" name="description" v-model:input-value="payload.description"
+             :error-input="errors['description']"/>
+      <Error :error-input="errors['description']"/>
     </Box>
+
     <Box>
-      <Label name="title" />
-      <Input2 name="title" v-model:input-value="payload.title" v-model:error-input="errors['title']"/>
-      <Error v-model:error-input="errors['title']" />
+      <Label name="title"/>
+      <Input @input="validate()" name="title" v-model:input-value="payload.title"
+             :error-input="errors['title']"/>
+      <Error :error-input="errors['title']"/>
+
     </Box>
-<!--    <Input isLabel name="name" v-model:input-value="payload.name" v-model:error-input="errors"/>
-    <Input isLabel name="description" v-model:input-value="payload.description" v-model:error-input="errors"/>
-    <Input isLabel name="title" v-model:input-value="payload.title" v-model:error-input="errors"/>-->
+
     <button type="submit" style="max-width: 300px">Submit</button>
+
   </form>
   <div>
     <pre>{{ products }}</pre>
