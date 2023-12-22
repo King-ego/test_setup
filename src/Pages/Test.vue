@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {ref} from "vue";
   import api from "../../services/api.ts";
+  import Input from "../components/Input.vue";
 
   const products = ref([]);
   const payload = ref({
@@ -33,10 +34,10 @@
 </script>
 
 <template>
-  <form @submit.prevent="submit">
-    <input v-model="payload.name" />
-    <input v-model="payload.description" />
-    <button type="submit">Submit</button>
+  <form @submit.prevent="submit" style="display: flex; flex-direction: column; gap: 5px">
+    <Input v-model:input-value="payload.name" />
+    <Input v-model:input-value="payload.description" />
+    <button type="submit" style="max-width: 300px">Submit</button>
   </form>
   <div>
     <pre>{{ products }}</pre>
