@@ -7,7 +7,7 @@ import {removeEmptyKeys} from "../util";
 
 import Box from "../components/InputItem/Box.vue";
 import Label from "../components/InputItem/Label.vue";
-import Input from "../components/InputItem/Input.vue";
+import Input from "../components/InputItem/InputValue.vue";
 import Error from "../components/InputItem/Error.vue";
 
 const initialPayload = {
@@ -102,18 +102,18 @@ onMounted();
     </Box>
 
     <Box>
-      <Label name="description"/>
-      <Input @input="validate()" name="description" v-model:input-value="payload.description"
-             :error-input="errors['description']"/>
-      <Error :error-input="errors['description']"/>
-    </Box>
-
-    <Box>
       <Label name="title"/>
       <Input @input="validate()" name="title" v-model:input-value="payload.title"
              :error-input="errors['title']"/>
       <Error :error-input="errors['title']"/>
 
+    </Box>
+
+    <Box>
+      <Label name="description"/>
+      <Input @input="validate()" type="textarea" name="description" v-model:input-value="payload.description"
+             :error-input="errors['description']"/>
+      <Error :error-input="errors['description']"/>
     </Box>
 
     <button type="submit" style="max-width: 300px">Submit</button>
