@@ -3,16 +3,21 @@ import {ref} from "vue";
 import {z} from "zod";
 
 import api from "../../services/api.ts";
-import Input from "../components/Input.vue";
 import {removeEmptyKeys} from "../util";
+import Box from "../components/InputItem/Box.vue";
+import Label from "../components/InputItem/Label.vue";
+import Input2 from "../components/InputItem/Input.vue";
+import Error from "../components/InputItem/Error.vue";
 
-const products = ref([]);
-const errors = ref({});
-const payload = ref({
+const initialPayload = {
   name: "",
   description: "",
   title: "",
-});
+};
+
+const products = ref([]);
+const errors = ref({});
+const payload = ref({...initialPayload});
 
 
 function getProducts() {
@@ -36,6 +41,7 @@ function clearError() {
 }
 
 function validate(): boolean {
+  console.log("bmbmbm")
   try {
     const clearObject = removeEmptyKeys(payload.value)
     const schema = z.object({
@@ -61,6 +67,7 @@ async function submit() {
     const resp = await api.post("/post", payload.value)
     const product = resp.data;
     products.value = [...products.value, product]
+    payload.value = {...initialPayload};
   } catch (validationError) {
     console.error("Validation error:", validationError.errors);
   }
@@ -75,9 +82,24 @@ onMounted();
 
 <template>
   <form @submit.prevent="submit" style="display: flex; flex-direction: column; gap: 10px">
-    <Input isLabel name="name" v-model:input-value="payload.name" v-model:error-input="errors"/>
+    <Box>
+      <Label name="name" />
+      <Input2 @change="validate()" name="name" v-model:input-value="payload.name" v-model:error-input="errors['name']"/>
+      <Error v-model:error-input="errors['name']" />
+    </Box>
+    <Box>
+      <Label name="description" />
+      <Input2 name="description" v-model:input-value="payload.description" v-model:error-input="errors['description']"/>
+      <Error v-model:error-input="errors['description']" />
+    </Box>
+    <Box>
+      <Label name="title" />
+      <Input2 name="title" v-model:input-value="payload.title" v-model:error-input="errors['title']"/>
+      <Error v-model:error-input="errors['title']" />
+    </Box>
+<!--    <Input isLabel name="name" v-model:input-value="payload.name" v-model:error-input="errors"/>
     <Input isLabel name="description" v-model:input-value="payload.description" v-model:error-input="errors"/>
-    <Input isLabel name="title" v-model:input-value="payload.title" v-model:error-input="errors"/>
+    <Input isLabel name="title" v-model:input-value="payload.title" v-model:error-input="errors"/>-->
     <button type="submit" style="max-width: 300px">Submit</button>
   </form>
   <div>
