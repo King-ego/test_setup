@@ -7,10 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+data_base/index.json
 node_modules
 dist
 dist-ssr
-data_base
 *.local
 
 # Editor directories and files

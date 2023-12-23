@@ -1,12 +1,20 @@
 <script setup lang="ts">
+interface EventChange {
+  target: HTMLInputElement
+}
 interface Props {
   inputValue: string;
   name: string;
   errorInput?: string;
   type?: 'input' | 'textarea';
 }
-const emit = defineEmits(['update:inputValue']);
 defineProps<Props>()
+
+const emit = defineEmits(['update:inputValue']);
+
+function changeValueInput(event: EventChange) {
+  emit('update:inputValue', event.target.value)
+}
 </script>
 
 <template>
@@ -15,12 +23,12 @@ defineProps<Props>()
         v-if="type === 'input' || !type"
         class="form-input"
         :value="inputValue"
-        @input="emit('update:inputValue', $event.target.value)" />
+        @input="changeValueInput" />
     <textarea
         v-if="type === 'textarea'"
         class="form-input"
         :value="inputValue"
-        @input="emit('update:inputValue', $event.target.value)"
+        @input="changeValueInput"
     ></textarea>
   </div>
 </template>

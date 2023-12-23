@@ -1,20 +1,27 @@
 <script setup lang="ts">
- import {ref} from "vue";
- import api from "../../services/api.ts";
+import {ref} from "vue";
+import api from "../../services/api.ts";
 
- const cards = ref([])
+interface Card {
+  id: number
+  title: string
+  author: string
+  description: string
+}
 
- function setCards() {
-   api.get("/post").then(response => {
-     cards.value = response.data
-   })
- }
+const cards = ref<Card[]>([])
 
- function onMount() {
-   setCards()
- }
+function setCards() {
+  api.get("/post").then(response => {
+    cards.value = response.data
+  })
+}
 
- onMount();
+function onMount() {
+  setCards()
+}
+
+onMount();
 
 </script>
 
@@ -22,7 +29,7 @@
   <div v-for="card in cards">
     <div :key="card?.id">
       <p>{{ card?.title }}</p>
-      <p>{{ card?.name }}</p>
+      <p>{{ card?.author }}</p>
       <p>{{ card?.description }}</p>
     </div>
   </div>

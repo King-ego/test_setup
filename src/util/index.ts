@@ -1,4 +1,4 @@
-export function removeEmptyKeys(obj) {
+export function removeEmptyKeys(obj): Object {
     for (const key in obj) {
         if (typeof obj[key] === 'object') {
             removeEmptyKeys(obj[key]);

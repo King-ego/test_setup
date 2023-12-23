@@ -1,4 +1,9 @@
 <script setup lang="ts">
+
+interface ParseError {
+  errors: { path: string[]; message: string }[]
+}
+
 import {ref} from "vue";
 import * as zod from "zod";
 
@@ -11,7 +16,7 @@ import Input from "../components/InputItem/InputValue.vue";
 import Error from "../components/InputItem/Error.vue";
 
 const initialPayload = {
-  name: "",
+  author: "",
   description: "",
   title: "",
 };
@@ -22,13 +27,13 @@ const payload = ref({...initialPayload});
 const isTrySubmit = ref(false);
 
 
-function setProducts() {
+function setProducts(): void {
   api.get("/post").then(response => {
     products.value = response.data
   });
 }
 
-function setError(e) {
+function setErrors(e: ParseError): void {
   clearError();
 
   e.errors.forEach(err => {
@@ -39,7 +44,7 @@ function setError(e) {
   });
 }
 
-function clearError() {
+function clearError(): void {
   errors.value = {};
 }
 
@@ -47,11 +52,11 @@ function validate(): boolean | void {
   if (!isTrySubmit.value) return;
 
   try {
-    const clearObject = removeEmptyKeys(payload.value)
+    const clearObject = removeEmptyKeys(payload.value);
     const schema = zod.object({
-      name: zod.string(),
+      author: zod.string(),
       title: zod.string(),
-      description: zod.string()
+      description: zod.string().min(4, "Descrição deve ter no mínimo 4 caracteres"),
     })
 
     schema.parse(clearObject)
@@ -62,16 +67,15 @@ function validate(): boolean | void {
 
   } catch (e) {
 
-    setError(e)
+    setErrors(e)
 
     return true;
 
   }
 }
 
-async function submit() {
+async function submit(): Promise<void> {
   isTrySubmit.value = true;
-
   const result = validate();
 
   if (result) return;
@@ -81,6 +85,7 @@ async function submit() {
     const product = resp.data;
     products.value = [...products.value, product]
     payload.value = {...initialPayload};
+    isTrySubmit.value = false;
   } catch (validationError) {
     console.error("Validation error:", validationError.errors);
   }
@@ -96,13 +101,13 @@ onMounted();
 <template>
   <form @submit.prevent="submit" style="display: flex; flex-direction: column; gap: 10px">
     <Box>
-      <Label name="name"/>
-      <Input @input="validate()" name="name" v-model:input-value="payload.name" :error-input="errors['name']"/>
-      <Error :error-input="errors['name']"/>
+      <Label name="Autor"/>
+      <Input @input="validate()" name="author" v-model:input-value="payload.author" :error-input="errors['author']"/>
+      <Error :error-input="errors['author']"/>
     </Box>
 
     <Box>
-      <Label name="title"/>
+      <Label name="Título"/>
       <Input @input="validate()" name="title" v-model:input-value="payload.title"
              :error-input="errors['title']"/>
       <Error :error-input="errors['title']"/>
@@ -110,7 +115,7 @@ onMounted();
     </Box>
 
     <Box>
-      <Label name="description"/>
+      <Label name="Descrição"/>
       <Input @input="validate()" type="textarea" name="description" v-model:input-value="payload.description"
              :error-input="errors['description']"/>
       <Error :error-input="errors['description']"/>
