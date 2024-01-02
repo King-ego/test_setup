@@ -1,15 +1,13 @@
 <script setup lang="ts">
-defineProps({
-  name: {
-    type: String,
-    default: "",
-    required: true
-  },
-})
+interface Props {
+  name: string;
+}
+
+defineProps<Props>()
 </script>
 
 <template>
-  <p>{{ name ? name : '' }}</p>
+  <p>{{ name  }}</p>
 </template>
 
 <style scoped>

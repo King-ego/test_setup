@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import {ref} from "vue";
-import api from "../../services/api.ts";
+import api from "../../../services/api.ts";
+import {ICard} from "../../entities/Cards.ts";
 
-interface Card {
-  id: number
-  title: string
-  author: string
-  description: string
-}
 
-const cards = ref<Card[]>([])
+const cards = ref<ICard[]>([])
 
 function setCards() {
   api.get("/post").then(response => {
@@ -26,13 +21,16 @@ onMount();
 </script>
 
 <template>
+  <router-link to="/">Add</router-link>
   <div v-for="card in cards">
     <div :key="card?.id">
       <p>{{ card?.title }}</p>
       <p>{{ card?.author }}</p>
       <p>{{ card?.description }}</p>
+      <router-link :to="`/card/${card?.id}`">View</router-link>
     </div>
   </div>
+  <pre>{{cards}}</pre>
 </template>
 
 <style scoped>

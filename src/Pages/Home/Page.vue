@@ -1,19 +1,18 @@
 <script setup lang="ts">
 
-interface ParseError {
-  errors: { path: string[]; message: string }[]
-}
 
 import {ref} from "vue";
 import * as zod from "zod";
+import {AxiosResponse} from "axios";
 
-import api from "../../services/api.ts";
-import {removeEmptyKeys} from "../util";
+import api from "../../../services/api.ts";
+import {removeEmptyKeys} from "../../util";
+import setErrors from "../../util/setErrors.ts"
 
-import Box from "../components/InputItem/Box.vue";
-import Label from "../components/InputItem/Label.vue";
-import Input from "../components/InputItem/InputValue.vue";
-import Error from "../components/InputItem/Error.vue";
+import Box from "../../components/InputItem/Box.vue";
+import Label from "../../components/InputItem/Label.vue";
+import Input from "../../components/InputItem/InputValue.vue";
+import Error from "../../components/InputItem/Error.vue";
 
 const initialPayload = {
   author: "",
@@ -26,25 +25,16 @@ const errors = ref({});
 const payload = ref({...initialPayload});
 const isTrySubmit = ref(false);
 
+const id = window.location.pathname.split('/').pop();
 
-function setProducts(): void {
-  api.get("/post").then(response => {
-    products.value = response.data
-  });
+
+
+function setCard():void{
+  if(!id) return;
+  api.get(`/post/${id}`).then((resp) => payload.value = resp.data)
 }
 
-function setErrors(e: ParseError): void {
-  clearError();
-
-  e.errors.forEach(err => {
-    const error = {
-      [err.path[0]]: err.message,
-    }
-    errors.value = {...errors.value, ...error};
-  });
-}
-
-function clearError(): void {
+function clearErrors(): void {
   errors.value = {};
 }
 
@@ -61,13 +51,13 @@ function validate(): boolean | void {
 
     schema.parse(clearObject)
 
-    clearError();
+    clearErrors();
 
     return false
 
   } catch (e) {
 
-    setErrors(e)
+    errors.value = setErrors(e)
 
     return true;
 
@@ -76,15 +66,20 @@ function validate(): boolean | void {
 
 async function submit(): Promise<void> {
   isTrySubmit.value = true;
-  const result = validate();
+  const isValidate = validate();
 
-  if (result) return;
+  if (isValidate) return;
 
   try {
-    const resp = await api.post("/post", payload.value)
+    let resp: AxiosResponse;
+    if (id) {
+      resp = await api.patch(`/post/${id}`, payload.value)
+    } else {
+      resp = await api.post("/post", payload.value)
+      payload.value = {...initialPayload};
+    }
     const product = resp.data;
     products.value = [...products.value, product]
-    payload.value = {...initialPayload};
     isTrySubmit.value = false;
   } catch (validationError) {
     console.error("Validation error:", validationError.errors);
@@ -92,13 +87,14 @@ async function submit(): Promise<void> {
 }
 
 function onMounted() {
-  setProducts();
+  setCard();
 }
 
 onMounted();
 </script>
 
 <template>
+  <router-link to="/card">Cards</router-link>
   <form @submit.prevent="submit" style="display: flex; flex-direction: column; gap: 10px">
     <Box>
       <Label name="Autor"/>
@@ -124,9 +120,6 @@ onMounted();
     <button type="submit" style="max-width: 300px">Submit</button>
 
   </form>
-  <div>
-    <pre>{{ products }}</pre>
-  </div>
 </template>
 
 <style scoped>

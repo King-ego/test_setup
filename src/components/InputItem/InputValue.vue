@@ -42,11 +42,15 @@ function changeValueInput(event: EventChange) {
   max-width: 300px;
 }
 
+textarea {
+  min-height: 200px;
+  resize: none;
+}
+
 .form-input {
   border: none;
   padding: 10px;
   width: 100%;
-  resize: none;
   &:focus {
     outline: none;
     border: 1px solid green;
